@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新冠病毒与人口密度的联系</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+  <style>
+    #header {
+      height: 50px;
+      background-color: #333;
+      color: white;
+      text-align: center;
+      line-height: 50px;
+    }
+    #mapView {
+      height: calc(100vh - 100px);
+      position: relative; /* Add this line */
+    }
+    #basemapGallery {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 50;
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #measurementWidget {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 50;
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #legend {
+      position: absolute;
+      bottom: 40px; /* Adjust as needed */
+      right: 10px; /* Adjust as needed */
+      z-index: 50;
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .btn-container {
+      position: absolute;
+      top: 70px;
+      left: 10px;
+      z-index: 50;
+    }
+    .btn {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">新冠病毒与人口密度的联系</div>
+  <div id="mapView">
+    <!-- Move legend container here -->
+    <div id="legend"></div>
+  </div>
+  <div id="measurementWidget"></div>
+  <div id="basemapGallery"></div>
+  <div class="btn-container">
+    <button class="btn" onclick="executeQuery()">Execute Query</button>
+    <button class="btn" onclick="executeAnalysis()">Execute Analysis</button>
+  </div>
+
+  <script src="https://js.arcgis.com/4.24/"></script>
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer",
+      "esri/layers/TileLayer",
+      "esri/widgets/BasemapGallery",
+      "esri/widgets/Search",
+      "esri/widgets/Legend",
+      "esri/widgets/ScaleBar",
+      "esri/widgets/Measurement",
+      "dojo/domReady!"
+    ], function(Map, MapView, FeatureLayer, TileLayer, BasemapGallery, Search, Legend, ScaleBar, Measurement) {
+      
+      var map = new Map({
+        basemap: "streets"
+      });
+
+      var view = new MapView({
+        container: "mapView",
+        map: map,
+        center: [-122.4194, 37.7749], // San Francisco
+        zoom: 3
+      });
+
+      var basemapGallery = new BasemapGallery({
+        view: view,
+        container: "basemapGallery"
+      });
+
+      var searchWidget = new Search({
+        view: view
+      });
+
+      var scaleBar = new ScaleBar({
+        view: view
+      });
+
+      var measurementWidget = new Measurement({
+        view: view,
+        container: "measurementWidget"
+      });
+
+      view.ui.add(searchWidget, {
+        position: "top-right"
+      });
+
+      view.ui.add(scaleBar, {
+        position: "bottom-right"
+      });
+
+      // 添加要素图层
+      var featureLayer = new FeatureLayer({
+        url: "https://www.geosceneonline.cn/server/rest/services/Hosted/新型冠状病毒疫情全球病例统计new/FeatureServer"
+      });
+
+      map.add(featureLayer);
+
+      // 添加切片图层
+      var tileLayer = new TileLayer({
+        url: "https://tiles.arcgis.com/tiles/VAI453sU9tG9rSmh/arcgis/rest/services/Population_Density_2015_tiles/MapServer"
+      });
+
+      map.add(tileLayer);
+
+      // 添加图例
+      var legend = new Legend({
+        view: view,
+        container: "legend"
+      });
+
+// 添加查询功能
+function executeQuery() {
+  var visibleLayers = map.layers.filter(function(layer) {
+    return layer.visible;
+  });
+
+  // 创建查询任务并执行查询
+  visibleLayers.forEach(function(layer) {
+    var queryTask = new QueryTask({
+      url: layer.url // 使用图层的 URL 创建查询任务
+    });
+
+    var query = new Query();
+    // 设置查询条件
+
+    queryTask.execute(query)
+      .then(function(result) {
+        // 处理查询结果
+        console.log("Query Result:", result);
+      })
+      .catch(function(error) {
+        // 处理错误
+        console.error("Query Error:", error);
+      });
+  });
+}
+
+    // 添加分析和计算功能
+function executeAnalysis() {
+  // 执行分析或计算操作
+  var result = performAnalysis();
+
+  // 处理结果
+  console.log("Analysis Result:", result);
+}
+
+// 示例计算函数
+function performAnalysis() {
+  // 这里是你的计算逻辑
+  var calculationResult = 2 + 2;
+
+  // 返回计算结果
+  return calculationResult;
+}
+
+    });
+  </script>
+</body>
+</html>
